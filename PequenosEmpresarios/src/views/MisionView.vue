@@ -45,10 +45,6 @@
             {{mission.nombre}}</h1>
         </div>
 
-        <div class="card flex justify-content-center">
-          <Knob v-model="value" />
-        </div>
-
         <div class="p-4 border bg-[#eea854] rounded-xl">
           <h2 class="text-2xl sm:text-2xl mb-2 text-white font-medium "><i class="fa fa-circle-question"></i> ¿Qué debo hacer? </h2>
 
