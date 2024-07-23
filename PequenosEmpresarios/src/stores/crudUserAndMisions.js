@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import Swal from 'sweetalert2';
 import { db } from '@/main.js';
 import { updateDoc, setDoc, collection, getDocs, getDoc, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { useAuthStore } from '@/stores/auth.js';

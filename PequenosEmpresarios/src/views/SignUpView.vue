@@ -1,6 +1,7 @@
 <script setup>
 
 /* global Swal */
+import Swal from 'sweetalert2';
 import { useAuthStore } from '@/stores/auth.js';
 import { ref } from 'vue';
 
@@ -31,7 +32,6 @@ const validateFields = () => {
 
   if (name.value !== null && birthYear.value !== '' && email.value !== null && password.value !== null && v_pass.value !== null) {
     if (birthYear.value < 1950 || birthYear.value > 2016) {
-      console.log("Error: El año debe estar entre 1950 y 2016");
       Swal.fire({
         title: "Error",
         text: "El año debe estar entre 1950 y 2016",
@@ -39,7 +39,6 @@ const validateFields = () => {
       });
       return false;
     } else if (!checkPassword(password.value) || !checkPassword(v_pass.value)) {
-      console.log("Error: La contraseña no cumple con los requisitos");
       Swal.fire({
         title: "Error",
         text: "La contraseña no cumple con los requisitos: debe tener entre 8 y 15 caracteres, al menos una letra mayúscula, una minúscula, un número y un caracter especial.",
@@ -47,7 +46,6 @@ const validateFields = () => {
       });
       return false;
     } else if (checkPassword(password.value) && checkPassword(v_pass.value) && password.value !== v_pass.value) {
-      console.log("Error: Las contraseñas no coinciden");
       Swal.fire({
         title: "Error",
         text: "Las contraseñas no coinciden",
@@ -55,15 +53,9 @@ const validateFields = () => {
       });
       return false;
     } else if (checkPassword(password.value) && checkPassword(v_pass.value) && password.value === v_pass.value) {
-      console.log("Success: Usuario creado");
-      Swal.fire({
-        title: "¡Éxito!",
-        text: "Usuario creado correctamente",
-        icon: "success",
-      });
+
       return true;
     } else {
-      console.log("Error: Por favor, verifique los campos");
       Swal.fire({
         title: "Error",
         text: "Por favor, verifique los campos",
@@ -72,7 +64,6 @@ const validateFields = () => {
       return false;
     }
   } else {
-    console.log("Error: Por favor, llene todos los campos");
     Swal.fire({
       title: "Error",
       text: "Por favor, llene todos los campos",

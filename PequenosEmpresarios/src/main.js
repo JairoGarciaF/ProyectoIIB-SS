@@ -36,10 +36,7 @@ onAuthStateChanged(auth, (user) => {
 
   const isLoginPage = router.currentRoute.value.name === 'login';
 
-  if (isAuthenticated && isLoginPage) {
-    // Si el usuario está autenticado y está en la página de inicio de sesión, redirige a la página de perfil
-    router.next('/profile');
-  } else if (!isAuthenticated && !isLoginPage) {
+  if (!isAuthenticated && !isLoginPage) {
     // Si el usuario no está autenticado y no está en la página de inicio de sesión, redirige a la página de inicio de sesión
     router.push('/login');
   }

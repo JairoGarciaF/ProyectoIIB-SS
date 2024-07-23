@@ -43,9 +43,7 @@ onBeforeUnmount(() => {
 });
 
 onBeforeMount(() => {
-  if (!authStore.currentUserEmail) {
-    router.push("/login")
-  }
+
   window.addEventListener("resize", checkScreen);
   checkScreen();
 
