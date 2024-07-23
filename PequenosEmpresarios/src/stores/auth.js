@@ -17,42 +17,43 @@ export const useAuthStore = defineStore('auth', () => {
         repassword: '',
         errorMessage: ''
     });
-    /* global Swal */
 
     const register = async (name, birthYear, email, password, flag) => {
         const auth = getAuth();
         const clientIp = await getClientIp();
-        if (flag == true) {
+        if (flag) {
             createUserWithEmailAndPassword(auth, email, password)
                 .then(() => {
-                    log.info(`User registered: ${email}`);
+                    log.info('auth', `User registered: ${email}`);
                     Swal.fire({
                         title: "¡Usuario registrado!",
                         icon: "success",
+                        confirmButtonColor: '#3085d6'
                     });
 
                     sendEmailVerification(auth.currentUser)
                         .then(() => {
-                            log.info(`Verification email sent to: ${email}`);
+                            log.info('auth', `Verification email sent to: ${email}`);
                             useCrudStore().addUser(name, birthYear, email);
                         })
                         .catch((error) => {
-                            log.error(`Error sending verification email: ${error}`);
+                            log.error('auth', `Error sending verification email: ${error}`);
                         });
 
-                    setTimeout(function () {
+                    setTimeout(() => {
                         window.location.href = "/ProyectoIIB-SS/login";
                     }, 3000);
                 })
                 .catch((error) => {
-                    log.error(`Registration failed: ${error}`);
+                    log.error('auth', `Registration failed: ${error}`);
                     Swal.fire({
                         title: "¡Fallo al registrar usuario!",
                         icon: "error",
+                        confirmButtonColor: '#3085d6'
                     });
                 });
         } else {
-            log.warn(`Registration flag is false, registration aborted`);
+            log.warn('auth', `Registration flag is false, registration aborted`);
         }
     };
 
@@ -63,10 +64,11 @@ export const useAuthStore = defineStore('auth', () => {
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 if (userCredential.user.emailVerified) {
-                    log.info(`User logged in: ${email}`);
+                    log.info('auth', `User logged in: ${email}`);
                     Swal.fire({
                         title: "¡Sesión iniciada!",
                         icon: "success",
+                        confirmButtonColor: '#3085d6'
                     });
                     setTimeout(() => {
                         currentUserEmail.value = userCredential.user.email;
@@ -74,28 +76,31 @@ export const useAuthStore = defineStore('auth', () => {
                         window.location.href = "/";
                     }, 3000);
                 } else {
-                    log.warn(`User tried to log in without email verification: ${email}`);
+                    log.warn('auth', `User tried to log in without email verification: ${email}`);
                     Swal.fire({
                         title: "¡Verifica tu correo!",
                         icon: "warning",
                         text: "¿Reenviar link de verificación?",
                         showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
                         confirmButtonText: "Sí, enviar",
                         cancelButtonText: "Cancelar",
                     })
                         .then(resultado => {
                             if (resultado.value) {
                                 sendEmailVerification(auth.currentUser);
-                                log.info(`Verification email resent to: ${email}`);
+                                log.info('auth', `Verification email resent to: ${email}`);
                             }
                         });
                 }
             })
             .catch((error) => {
-                log.error(`Login failed for user ${email}: ${error}`);
+                log.error('auth', `Login failed for user ${email}: ${error}`);
                 Swal.fire({
                     title: "¡Fallo al iniciar sesión!",
                     icon: "error",
+                    confirmButtonColor: '#3085d6'
                 });
             });
     };
@@ -104,16 +109,17 @@ export const useAuthStore = defineStore('auth', () => {
         const auth = getAuth();
         const clientIp = await getClientIp();
         signOut(auth).then(() => {
-            log.info(`User signed out: ${currentUserEmail.value}`);
+            log.info('auth', `User signed out: ${currentUserEmail.value}`);
             Swal.fire({
                 title: "¡Sesión cerrada!",
                 icon: "success",
+                confirmButtonColor: '#3085d6'
             });
 
             currentUserEmail.value = "";
             sessionStatus.value = "";
         }).catch((error) => {
-            log.error(`Sign out failed: ${error}`);
+            log.error('auth', `Sign out failed: ${error}`);
         });
     };
 
@@ -122,10 +128,10 @@ export const useAuthStore = defineStore('auth', () => {
         const clientIp = await getClientIp();
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                log.info(`Auth state changed, user signed in: ${user.email}`);
+                log.info('auth', `Auth state changed, user signed in: ${user.email}`);
                 sessionStatus.value = true;
             } else {
-                log.info(`Auth state changed, user signed out`);
+                log.info('auth', `Auth state changed, user signed out`);
                 sessionStatus.value = false;
             }
         });
@@ -136,14 +142,15 @@ export const useAuthStore = defineStore('auth', () => {
         const clientIp = await getClientIp();
         sendPasswordResetEmail(auth, email)
             .then(() => {
-                log.info(`Password reset email sent to: ${email}`);
+                log.info('auth', `Password reset email sent to: ${email}`);
                 Swal.fire({
                     title: "¡Correo enviado!",
                     icon: "success",
+                    confirmButtonColor: '#3085d6'
                 });
             })
             .catch((error) => {
-                log.error(`Password reset email failed for ${email}: ${error}`);
+                log.error('auth', `Password reset email failed for ${email}: ${error}`);
             });
     };
 

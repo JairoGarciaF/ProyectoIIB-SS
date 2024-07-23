@@ -198,6 +198,7 @@ export const useCrudStore = defineStore('crud', () => {
             Swal.fire({
                 title: "Se han enviado las respuestas con éxito",
                 icon: "success",
+                confirmButtonColor: '#3085d6'
             });
 
             // Agregar historial de misiones de cada estudiante
@@ -211,6 +212,7 @@ export const useCrudStore = defineStore('crud', () => {
             Swal.fire({
                 title: error,
                 icon: "error",
+                confirmButtonColor: '#3085d6'
             });
             console.error(error.message);
         }
@@ -338,6 +340,7 @@ export const useCrudStore = defineStore('crud', () => {
                     Swal.fire({
                         title: "Calificación ingresada correctamente",
                         icon: "success",
+                        confirmButtonColor: '#3085d6'
                     });
 
                     // Elimina al usuario del array "state_2_sent" de la misión

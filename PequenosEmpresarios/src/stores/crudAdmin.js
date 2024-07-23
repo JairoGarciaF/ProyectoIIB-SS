@@ -287,6 +287,7 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
             Swal.fire({
                 title: "Se han enviado las respuestas con éxito",
                 icon: "success",
+                confirmButtonColor: '#3085d6'
             });
             setTimeout(() => {
                 router.push("/")
@@ -296,6 +297,7 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
             Swal.fire({
                 title: error,
                 icon: "error",
+                confirmButtonColor: '#3085d6'
             });
             console.error(error.message);
         }

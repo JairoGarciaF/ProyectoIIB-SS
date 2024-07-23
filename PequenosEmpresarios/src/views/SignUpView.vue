@@ -36,6 +36,7 @@ const validateFields = () => {
         title: "Error",
         text: "El año debe estar entre 1950 y 2016",
         icon: "error",
+        confirmButtonColor: '#3085d6'
       });
       return false;
     } else if (!checkPassword(password.value) || !checkPassword(v_pass.value)) {
@@ -43,6 +44,7 @@ const validateFields = () => {
         title: "Error",
         text: "La contraseña no cumple con los requisitos: debe tener entre 8 y 15 caracteres, al menos una letra mayúscula, una minúscula, un número y un caracter especial.",
         icon: "error",
+        confirmButtonColor: '#3085d6'
       });
       return false;
     } else if (checkPassword(password.value) && checkPassword(v_pass.value) && password.value !== v_pass.value) {
@@ -50,6 +52,7 @@ const validateFields = () => {
         title: "Error",
         text: "Las contraseñas no coinciden",
         icon: "error",
+        confirmButtonColor: '#3085d6'
       });
       return false;
     } else if (checkPassword(password.value) && checkPassword(v_pass.value) && password.value === v_pass.value) {
@@ -60,6 +63,7 @@ const validateFields = () => {
         title: "Error",
         text: "Por favor, verifique los campos",
         icon: "error",
+        confirmButtonColor: '#3085d6'
       });
       return false;
     }
@@ -68,6 +72,7 @@ const validateFields = () => {
       title: "Error",
       text: "Por favor, llene todos los campos",
       icon: "error",
+      confirmButtonColor: '#3085d6'
     })
     return false;
   }

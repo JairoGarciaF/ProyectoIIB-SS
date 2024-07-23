@@ -7,10 +7,11 @@ const firestoreLogger = async (methodName, logLevel, loggerName, ...args) => {
   const timestamp = moment().tz('America/Guayaquil').format('YYYY-MM-DD HH:mm:ss');
   const clientIp = await getClientIp();
   const message = `[${methodName.toUpperCase()}]: ${args.join(' ')}`;
+  console.log(logLevel, args);
 
   const db = getFirestore();
   const logDocId = timestamp;
-  const logDoc = doc(db, 'logs', logDocId);
+  const logDoc = doc(db, 'logs', methodName, args[0], logDocId);
 
   try {
     await setDoc(logDoc, {
@@ -40,6 +41,6 @@ log.methodFactory = function (methodName, logLevel, loggerName) {
   };
 };
 
-log.setLevel('info'); // Puedes ajustar el nivel de logs aquí
+log.setLevel('trace'); // Puedes ajustar el nivel de logs aquí
 
 export default log;

@@ -1,7 +1,6 @@
 import App from "./App.vue";
 import router from "./router";
 import './assets/main.css';
-
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
@@ -10,6 +9,7 @@ import PrimeVue from 'primevue/config'
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+
 // TODO: Add SDKs for Firebase products that you want to use
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 // https://firebase.google.com/docs/web/setup#available-libraries
