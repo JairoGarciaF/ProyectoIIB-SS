@@ -4,6 +4,7 @@ import { db } from '@/main.js';
 import { setDoc, collection, getDocs, getDoc, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { useAuthStore } from '@/stores/auth.js';
 import { useRouter } from "vue-router";
+import log from '@/utils/logger';
 
 export const useCrudAdminStore = defineStore('crudAdmin', () => {
 
@@ -20,7 +21,6 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
             const data = doc.data();
             users.push(data)
         })
-        console.log(users);
         return users;
     };
 
@@ -66,21 +66,21 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
                         estudiantes: newCourseStudents
                     });
                 }
-                console.log("Todo bien mi Lidel");
+                log.info('course', `User ${email} added to course ${course} successfully`);
 
 
             } catch (error) {
-                console.error("Error al añadir el documento: ", error);
+                log.error('course', `Error adding user ${email} to course: ${error}`);
             }
         } else {
-            console.log("Ninguno");
+            log.info('course', `No course selected for ${email}`);
         }
 
     }
 
 
 
-    // 2. Agregar usuario con el email
+    // 3. Agregar usuario con el email
     const addUser = async (nombre, anio, correo) => {
         try {
             // Utiliza el correo electrónico como ID
@@ -101,23 +101,23 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
                 nombre: 'Misión Prueba 1',
                 estado: 'Pendiente'
             });
-
+            log.info('user', `User ${correo} added successfully`);
         } catch (error) {
-            console.error("Error al añadir el documento: ", error);
+            log.error('user', `Error adding user ${correo}: ${error}`);
         }
     };
 
-    // 3. Eliminar usuarios
+    // 4. Eliminar usuarios
     const deleteUser = async (id) => {
         try {
             await deleteDoc(doc(db, "usuarios", id));
-            console.log("Usuario eliminado");
+            log.info('user', `User with id ${id} deleted successfully`);
         } catch (error) {
-            console.error("Error al eliminar el usuario: ", error);
+            log.error('user', `Error deleting user ${id}: ${error}`);
         }
     };
 
-    // 4. Obtener las misiones según el correo del usuario
+    // 5. Obtener las misiones según el correo del usuario
     const emailStudent = useAuthStore().currentUserEmail;
     const getMissionsPerStudent = async () => {
         try {
@@ -151,12 +151,11 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
             return missions
 
         } catch (error) {
-            console.error('Error al obtener las misiones:', error);
-            throw error;
+            log.error('mission', `Error retrieving missions for ${emailStudent}: ${error}`);
         }
     };
 
-    // 5. Obtener la misión seleccionada
+    // 6. Obtener la misión seleccionada
     const getUserMissionSelected = async (misionRoute) => {
         // Get the current user's email
         const refMission = doc(db, "misiones", misionRoute);
@@ -166,7 +165,7 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
         return snapshot.data();
     };
 
-    // 6. Obtener todas las misiones
+    // 7. Obtener todas las misiones
     const getMissionsDocs = async () => {
         // Obtiene una referencia a la colección "cursos"
         const missionsRef = collection(db, 'misiones');
@@ -180,7 +179,7 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
         return missions;
     }
 
-    // 7. Obtener misiones del curso
+    // 8. Obtener misiones del curso
     const getCourseMissions = async () => {
         const userCourse = '202311_01'; // nombre del curso del que desea obtener las misiones
 
@@ -190,7 +189,7 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
         return courseMissions;
     }
 
-    // 7.1 Obtener numero total de estudiantes del curso
+    // 9 Obtener numero total de estudiantes del curso
     const getTotalStudentsCourse = async () => {
         const userCourse = '202311_01'; // nombre del curso del que desea obtener las misiones
 
@@ -200,7 +199,7 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
         return courseLength;
     }
 
-    // 7.2 Obtener numero total de estudiantes que enviaron cada mision
+    // 10 Obtener numero total de estudiantes que enviaron cada mision
     const getTotalStudentsSentMissions = async () => {
         const missionsRef = collection(db, "misiones");
         const missionsSnapshot = await getDocs(missionsRef);
@@ -224,7 +223,7 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
         return result;
     };
 
-    // 7.3 Convertir _timestamp a fecha dd/mm/yyyy
+    // 11 Convertir _timestamp a fecha dd/mm/yyyy
     const convertTimestampToDate = (timestamp) => {
         const date = timestamp.toDate();
         const day = date.getDate();
@@ -233,7 +232,7 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
         return `${day}/${month}/${year}`;
     }
 
-    // 7.4 Obtener estudiantes que enviaron una mision
+    // 12 Obtener estudiantes que enviaron una mision
     const getStudentsSentMission = async (missionRoute) => {
         const usersProgressionRef = collection(db, "misiones", missionRoute, "usersProgression");
         const usersProgressionSnapshot = await getDocs(usersProgressionRef);
@@ -250,28 +249,42 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
                 const userData = userSnapshot.data();
                 users.push({ nombre: userData.nombre, edad: currentYear - userData.anionac, fechaEnvio: convertTimestampToDate(userProgressionDoc.data().mission_answer.fecha) });
             } else {
-                console.log('Usuario con ID ${userProgressionDoc.id} no encontrado.');
+                Swal.fire({
+                    title: "Usuario no encontrado.",
+                    icon: "info",
+                    confirmButtonColor: '#3085d6'
+                });
             }
         });
 
         return users;
     }
 
-    // 7.5 Obtener las respuestas de un estudiante a una misión
+    // 13 Obtener las respuestas de un estudiante a una misión
     const getStudentAnswers = async (missionRoute, userEmail) => {
-        const missionProgressRef = doc(db, "misiones", missionRoute, "usersProgression", userEmail);
-        const missionProgressSnapshot = await getDoc(missionProgressRef);
+        try {
+            const missionProgressRef = doc(db, "misiones", missionRoute, "usersProgression", userEmail);
+            const missionProgressSnapshot = await getDoc(missionProgressRef);
 
-        if (missionProgressSnapshot.exists()) {
-            // Verificar si el documento existe antes de acceder a sus datos
-            const missionData = missionProgressSnapshot.data();
-            return missionData.mission_answer;
-        } else {
-            console.log(`El estudiante con correo ${userEmail} no tiene respuesta para la misión ${missionRoute}.`);
+            if (missionProgressSnapshot.exists()) {
+                // Verificar si el documento existe antes de acceder a sus datos
+                const missionData = missionProgressSnapshot.data();
+                return missionData.mission_answer;
+            } else {
+                Swal.fire({
+                    title: "El estudiante con correo no tiene respuesta para la misión",
+                    icon: "info",
+                    confirmButtonColor: '#3085d6'
+                });
+                log.warn('mission', `No answers found for student ${userEmail}`);
+            }
+        } catch (error) {
+            log.error('mission', `Error retrieving student ${userEmail} answers: ${error}`);
+            throw error;
         }
     };
 
-    // 8. Guardar el resultado de una misión
+    // 14 Guardar el resultado de una misión
     const saveUserMission = async (userEmail, misionRoute) => {
         try {
             const userAnswers = updateUserAnswers();
@@ -292,101 +305,36 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
             setTimeout(() => {
                 router.push("/")
             }, 2 * 1000);
+            log.info('mission', `User ${userEmail} mission ${misionRoute} saved successfully.`);
         } catch (error) {
-            // Handle the validation error or any other error here
             Swal.fire({
                 title: error,
                 icon: "error",
                 confirmButtonColor: '#3085d6'
             });
-            console.error(error.message);
+            log.error('mission', `Error saving user ${userEmail} mission: ${error}`);
         }
     };
 
-    // 8.1. toma los valores de los inputs o los textareas y genera una ventana de error si no están todos
-    const updateUserAnswers = () => {
-        let userAnswers = {};
-        const inputs = document.querySelectorAll('input');
-        const textareas = document.querySelectorAll('textarea');
-        userAnswers.fecha = new Date();
-        const radioGroups = {};
-
-
-        // Código para inputs
-        for (const input of inputs) {
-
-
-            // Handle checkbox specifically
-
-            // para checkbox
-            if (input.type === 'checkbox') {
-                userAnswers[input.id] = input.checked;
-
-                // Para radios
-            } else if (input.type === 'radio') {
-                // para radios
-
-                if (input.checked) {
-                    radioGroups[input.name] = true;
-                    userAnswers[input.id] = input.value;
-                    if (input.value.trim() === '') {
-                        throw new Error(`El campo '${input.id}' es requerido.`);
-                    }
-
-                    // Track checked radio buttons in a group
-                } else if (!input.checked && radioGroups[input.name] != true) {
-                    radioGroups[input.name] = false;
-                }
-
-                //Para textos y números
-            } else if (input.type == 'text' || input.type == 'number') {
-                const value = input.value;
-
-                // Check if the input is required and empty
-                if (input.required && value.trim() === '') {
-                    throw new Error(`El campo '${input.id}' es requerido.`);
-                }
-
-                userAnswers[input.id] = value;
-            }
-        }
-
-        Object.keys(radioGroups).forEach(groupName => {
-            if (!radioGroups[groupName]) {
-                throw new Error(`Al menos una opción en la '${groupName}' es requerida.`);
-            }
-        });
-
-        for (const textarea of textareas) {
-            const value = textarea.value.trim();
-            if (textarea.required && value === '') {
-                throw new Error(`El campo '${textarea.id}' es requerido.`);
-            } else {
-                userAnswers[textarea.id] = value;
-            }
-        }
-
-        return userAnswers;
-    };
-
-    // 9. Traer respuesta a la misión del estudiante
+    // 16 Traer respuesta a la misión del estudiante
     const getUserAnswersbyMission = async (misionRoute, userEmail) => {
         const missionAnswersRef = doc(db, "misiones", misionRoute, "usersAnswers", userEmail);
         try {
-            const snapshot = await getDoc(missionAnswersRef)
+            const snapshot = await getDoc(missionAnswersRef);
             if (snapshot.exists()) {
-
-                return snapshot.data()
+                return snapshot.data();
             } else {
-                const noAnswerYet = { finished: false, mission_answer: null }
-                return noAnswerYet
+                const noAnswerYet = { finished: false, mission_answer: null };
+                log.warn('mission', `No answers found for user ${userEmail} by mission`);
+                return noAnswerYet;
             }
         } catch (error) {
-            console.log(error);
+            log.error('mission', `Error retrieving user ${userEmail} answers by mission: ${error}`);
+            throw error;
         }
+    };
 
-    }
-
+    
     return {
         getAllUsers,
         addUserToCourse,

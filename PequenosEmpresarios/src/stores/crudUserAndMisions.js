@@ -5,6 +5,7 @@ import { updateDoc, setDoc, collection, getDocs, getDoc, addDoc, deleteDoc, doc 
 import { useAuthStore } from '@/stores/auth.js';
 import { useRouter } from "vue-router";
 import { ref } from "vue";
+import log from '@/utils/logger';
 
 export const useCrudStore = defineStore('crud', () => {
 
@@ -36,11 +37,13 @@ export const useCrudStore = defineStore('crud', () => {
                 curso: "Ninguno"
             });
 
+            log.info('user', `User ${correo} added successfully`);
+
             // Agregar una subcolección "historial" al documento creado
             //const historialRef = collection(docRef, 'historial');
 
         } catch (error) {
-            console.error("Error al añadir el documento: ", error);
+            log.error('user', `Error adding user ${correo}: ${error}`)
         }
     };
 
@@ -49,9 +52,9 @@ export const useCrudStore = defineStore('crud', () => {
     const deleteUser = async (id) => {
         try {
             await deleteDoc(doc(db, "usuarios", id));
-            console.log("Usuario eliminado");
+            log.info('user', `User with id ${id} deleted successfully`);
         } catch (error) {
-            console.error("Error al eliminar el usuario: ", error);
+            log.error('user', `Error deleting user ${id}: ${error}`);
         }
     };
 
@@ -65,6 +68,7 @@ export const useCrudStore = defineStore('crud', () => {
         await updateDoc(userRef, {
             monedas: userCoins + coins
         });
+        log.info('user', `User's ${userEmail} coins updated to ${userCoins + coins}`);
     };
 
 
@@ -131,15 +135,25 @@ export const useCrudStore = defineStore('crud', () => {
 
     // 7.3 Obtener las respuestas de un estudiante a una misión
     const getStudentAnswers = async (missionRoute, userEmail) => {
-        const missionProgressRef = doc(db, "misiones", missionRoute, "usersAnswers", userEmail);
-        const missionProgressSnapshot = await getDoc(missionProgressRef);
+        try{
+            const missionProgressRef = doc(db, "misiones", missionRoute, "usersAnswers", userEmail);
+            const missionProgressSnapshot = await getDoc(missionProgressRef);
 
-        if (missionProgressSnapshot.exists()) {
-            // Verificar si el documento existe antes de acceder a sus datos
-            const missionData = missionProgressSnapshot.data();
-            return missionData.mission_answer;
-        } else {
-            console.log(`El estudiante con correo ${userEmail} no tiene respuesta para la misión ${missionRoute}.`);
+            if (missionProgressSnapshot.exists()) {
+                // Verificar si el documento existe antes de acceder a sus datos
+                const missionData = missionProgressSnapshot.data();
+                return missionData.mission_answer;
+            } else {
+                Swal.fire({
+                        title: "El estudiante con correo no tiene respuesta para la misión",
+                        icon: "info",
+                        confirmButtonColor: '#3085d6'
+                    });
+                    log.warn('mission', `No answers found for student ${userEmail}`);
+            }
+        } catch (error) {
+            log.error('mission', `Error retrieving student ${userEmail} answers: ${error}`);
+            throw error;
         }
     };
 
@@ -207,6 +221,7 @@ export const useCrudStore = defineStore('crud', () => {
             setTimeout(() => {
                 router.push("/")
             }, 2 * 1000);
+            log.info('mission', `User ${userEmail} mission ${misionRoute} saved successfully.`);
         } catch (error) {
             // Handle the validation error or any other error here
             Swal.fire({
@@ -214,7 +229,7 @@ export const useCrudStore = defineStore('crud', () => {
                 icon: "error",
                 confirmButtonColor: '#3085d6'
             });
-            console.error(error.message);
+            log.error('mission', `Error saving user ${userEmail} mission: ${error}`);
         }
     };
 
@@ -296,16 +311,18 @@ export const useCrudStore = defineStore('crud', () => {
                 return snapshot.data()
             } else {
                 const noAnswerYet = { finished: false, mission_answer: null }
+                log.warn('mission', `No answers found for user ${userEmail} by mission`);
+
                 return noAnswerYet
             }
         } catch (error) {
-            console.log(error);
+            log.error('mission', `Error retrieving user ${userEmail} answers by mission: ${error}`);
+
         }
 
     }
 
-
-    // 10. Guardar calificacion dada por el profesor
+    // 10. Guardar calificación dada por el profesor
     const storeGrade = async (misionRoute, course, userEmail, grade, age, name, feedback) => {
         const fechaActual = new Date();
         const userDetails = {
@@ -352,16 +369,18 @@ export const useCrudStore = defineStore('crud', () => {
                     setTimeout(() => {
                         router.push(`/misionResults/${misionRoute}`);
                     }, 2 * 1000);
+
+                    log.info('grade', `Grade for ${userEmail} stored successfully`);
                 } else {
-                    console.error("No se encontró la misión en el array 'state_3_finished'.");
+
+                    log.error('grade', `No mission found for ${userEmail} at 'state_3_finished'.`);
                 }
             }
 
         } catch (error) {
-            console.log(error);
+            log.error('grade', `Error storing grade for ${userEmail}: ${error}` );
         }
     }
-
 
     // 11. Eliminar usuario de state_2_sent
     const deleteUserFromState2 = async (courseRef, course_missions_data, misionIndex, userEmail) => {
@@ -374,13 +393,11 @@ export const useCrudStore = defineStore('crud', () => {
                 curso_misiones: course_missions_data,
             });
 
-            console.log("State_2 actualizado correctamente");
 
         } catch (error) {
-            console.log(error);
+            log.error('mission', `Error deleting user ${userEmail} from state_2_sent: ${error}`);
         }
     }
-
 
     // 12. Agregar historial de misiones de cada estudiante
     const addStudentHistoric = async (missionName, description, coins) => {
@@ -398,11 +415,12 @@ export const useCrudStore = defineStore('crud', () => {
                 monedas: coins,
             });
 
+            log.info('historic', `Mission history added successfully for ${emailStudent}`);
+
         } catch (error) {
-            console.error("Error al añadir el documento: ", error);
+            log.error('historic', `Error adding mission history for ${emailStudent}: ${error}`);
         }
     }
-
 
     // 13. Obtener el historial de misiones de cada estudiante
     const getStudentHistoric = async () => {
@@ -425,10 +443,11 @@ export const useCrudStore = defineStore('crud', () => {
             return historial;
 
         } catch (error) {
-            console.error("Error al encontrar el documento: ", error);
+            log.error('historic', `Error retrieving mission history for ${emailStudent}: ${error}`);
             return false;
         }
     }
+
 
 
     return {

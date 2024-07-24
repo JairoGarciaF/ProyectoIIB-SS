@@ -6,8 +6,7 @@ import { getClientIp } from '@/utils/ip';
 const firestoreLogger = async (methodName, logLevel, loggerName, ...args) => {
   const timestamp = moment().tz('America/Guayaquil').format('YYYY-MM-DD HH:mm:ss');
   const clientIp = await getClientIp();
-  const message = `[${methodName.toUpperCase()}]: ${args.join(' ')}`;
-  console.log(logLevel, args);
+  const message = `[${methodName.toUpperCase()}]: ${args[1]}`;
 
   const db = getFirestore();
   const logDocId = timestamp;
@@ -16,7 +15,6 @@ const firestoreLogger = async (methodName, logLevel, loggerName, ...args) => {
   try {
     await setDoc(logDoc, {
       timestamp,
-      logLevel,
       message,
       clientIp
     });
@@ -41,6 +39,6 @@ log.methodFactory = function (methodName, logLevel, loggerName) {
   };
 };
 
-log.setLevel('trace'); // Puedes ajustar el nivel de logs aquí
+log.setLevel('info'); // Puedes ajustar el nivel de logs aquí
 
 export default log;
