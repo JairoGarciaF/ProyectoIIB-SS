@@ -1,41 +1,77 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth.js';
-import { ref } from 'vue';
-
+import { ref, onMounted, watch } from 'vue';
 const email = ref(null);
 const password = ref(null);
-// const recaptchaResponse = ref(null);
+const showCaptcha = ref(false);
+const loginAttempts = ref(0);
+const recaptchaResponse = ref(null);
+const recaptchaWidgetId = ref(null);
 
-// const handleSubmit = () => {
-//     if (recaptchaResponse.value) {
-//         const authStore = useAuthStore();
-//         authStore.login(email.value, password.value, recaptchaResponse.value);
-//     } else {
-//         alert('Por favor, completa el reCAPTCHA.');
-//     }
-// };
-
-// const onRecaptchaVerified = (response) => {
-//     recaptchaResponse.value = response;
-// };
-// onMounted(() => {
-//     // Render the reCAPTCHA widget when the component is mounted
-//     window.grecaptcha.ready(() => {
-//         window.grecaptcha.render('recaptcha', {
-//             sitekey: '6Ld3IxcqAAAAABjTviT4TkRa2XhTkqp0y2heV-Cn',
-//             callback: onRecaptchaVerified,
-//         });
-//     });
-// });
-const handleSubmit = () => {
-    // Accede al almacén de autenticación
-    const authStore = useAuthStore();
-
-    // Llama a la función register del almacén
-    authStore.login(email.value, password.value);
+const renderRecaptcha = () => {
+    window.grecaptcha.ready(() => {
+        recaptchaWidgetId.value = window.grecaptcha.render('recaptcha', {
+            sitekey: import.meta.env.VITE_RECAPTCHA2_SITE_KEY,
+            callback: onRecaptchaVerified,
+        });
+    });
 };
 
+const handleSubmit = async () => {
+    if (showCaptcha.value && !recaptchaResponse.value) {
+        alert('Por favor, completa el reCAPTCHA.');
+        return;
+    }
 
+    let captchaValid = true;
+
+    if (showCaptcha.value) {
+        const response = await fetch('http://localhost:5000/verify-recaptcha', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ token: recaptchaResponse.value })
+        });
+        const data = await response.json();
+        captchaValid = data.success;
+    }
+
+    if (captchaValid) {
+        const authStore = useAuthStore();
+        try {
+            await authStore.login(email.value, password.value);
+            loginAttempts.value = 0; // Reiniciar intentos al iniciar sesión exitosamente
+            recaptchaResponse.value = null; // Resetear el reCAPTCHA
+            showCaptcha.value = false; // Ocultar el reCAPTCHA
+        } catch (error) {
+            loginAttempts.value += 1;
+            if (loginAttempts.value >= 3) {
+                showCaptcha.value = true;
+                window.grecaptcha.reset(recaptchaWidgetId.value); // Resetear el reCAPTCHA
+            }
+        }
+    } else {
+        alert('reCAPTCHA no válido. Por favor, inténtalo de nuevo.');
+        window.grecaptcha.reset(recaptchaWidgetId.value); // Resetear el reCAPTCHA
+    }
+};
+
+const onRecaptchaVerified = (response) => {
+    recaptchaResponse.value = response;
+};
+
+watch(showCaptcha, (newVal) => {
+    if (newVal) {
+        renderRecaptcha();
+    }
+});
+
+onMounted(() => {
+    if (showCaptcha.value) {
+        renderRecaptcha();
+    }
+});
 </script>
 
 <template>
@@ -77,7 +113,7 @@ const handleSubmit = () => {
                             </div>
                         </div>
                         <br>
-                        <!-- <div id="recaptcha" class="g-recaptcha"></div> -->
+                        <div v-if="showCaptcha" id="recaptcha"></div>
                         <br>
                         <button type="submit"
                             class="transition p-4 w-full bg-[#0FD2C0] hover:bg-[#0DB1AB] text-white rounded-lg">

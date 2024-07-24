@@ -61,7 +61,7 @@ export const useAuthStore = defineStore('auth', () => {
         const auth = getAuth();
         const clientIp = await getClientIp();
 
-        signInWithEmailAndPassword(auth, email, password)
+        return signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 if (userCredential.user.emailVerified) {
                     log.info('auth', `User logged in: ${email}`);
@@ -102,6 +102,7 @@ export const useAuthStore = defineStore('auth', () => {
                     icon: "error",
                     confirmButtonColor: '#3085d6'
                 });
+                throw error; // Lanzar el error para que el componente sepa que el inicio de sesión falló
             });
     };
 
