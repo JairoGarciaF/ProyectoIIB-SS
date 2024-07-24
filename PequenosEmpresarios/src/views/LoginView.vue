@@ -1,18 +1,33 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth.js';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const email = ref(null);
 const password = ref(null);
-
+const recaptchaResponse = ref(null);
 
 const handleSubmit = () => {
-    // Accede al almacén de autenticación
-    const authStore = useAuthStore();
-
-    // Llama a la función register del almacén
-    authStore.login(email.value, password.value);
+    if (recaptchaResponse.value) {
+        const authStore = useAuthStore();
+        authStore.login(email.value, password.value, recaptchaResponse.value);
+    } else {
+        alert('Por favor, completa el reCAPTCHA.');
+    }
 };
+
+const onRecaptchaVerified = (response) => {
+    recaptchaResponse.value = response;
+};
+
+onMounted(() => {
+    // Render the reCAPTCHA widget when the component is mounted
+    window.grecaptcha.ready(() => {
+        window.grecaptcha.render('recaptcha', {
+            sitekey: '6Ld3IxcqAAAAABjTviT4TkRa2XhTkqp0y2heV-Cn',
+            callback: onRecaptchaVerified,
+        });
+    });
+});
 </script>
 
 <template>
@@ -54,6 +69,7 @@ const handleSubmit = () => {
                             </div>
                         </div>
                         <br>
+                        <div id="recaptcha" class="g-recaptcha"></div>
                         <br>
                         <button type="submit"
                             class="transition p-4 w-full bg-[#0FD2C0] hover:bg-[#0DB1AB] text-white rounded-lg">
@@ -67,7 +83,8 @@ const handleSubmit = () => {
                             </router-link>
                         </div>
                         <div class="text-center">
-                            <router-link to="/forgot-password" class="text-[#1F1F1F] hover:text-[#0DB1AB] cursor-pointer">
+                            <router-link to="/forgot-password"
+                                class="text-[#1F1F1F] hover:text-[#0DB1AB] cursor-pointer">
                                 <b>¿Olvidaste tu contraseña?</b>
                             </router-link>
                         </div>
