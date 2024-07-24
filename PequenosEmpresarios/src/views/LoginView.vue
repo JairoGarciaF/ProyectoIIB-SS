@@ -1,33 +1,41 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth.js';
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 
 const email = ref(null);
 const password = ref(null);
-const recaptchaResponse = ref(null);
+// const recaptchaResponse = ref(null);
 
+// const handleSubmit = () => {
+//     if (recaptchaResponse.value) {
+//         const authStore = useAuthStore();
+//         authStore.login(email.value, password.value, recaptchaResponse.value);
+//     } else {
+//         alert('Por favor, completa el reCAPTCHA.');
+//     }
+// };
+
+// const onRecaptchaVerified = (response) => {
+//     recaptchaResponse.value = response;
+// };
+// onMounted(() => {
+//     // Render the reCAPTCHA widget when the component is mounted
+//     window.grecaptcha.ready(() => {
+//         window.grecaptcha.render('recaptcha', {
+//             sitekey: '6Ld3IxcqAAAAABjTviT4TkRa2XhTkqp0y2heV-Cn',
+//             callback: onRecaptchaVerified,
+//         });
+//     });
+// });
 const handleSubmit = () => {
-    if (recaptchaResponse.value) {
-        const authStore = useAuthStore();
-        authStore.login(email.value, password.value, recaptchaResponse.value);
-    } else {
-        alert('Por favor, completa el reCAPTCHA.');
-    }
+    // Accede al almacén de autenticación
+    const authStore = useAuthStore();
+
+    // Llama a la función register del almacén
+    authStore.login(email.value, password.value);
 };
 
-const onRecaptchaVerified = (response) => {
-    recaptchaResponse.value = response;
-};
 
-onMounted(() => {
-    // Render the reCAPTCHA widget when the component is mounted
-    window.grecaptcha.ready(() => {
-        window.grecaptcha.render('recaptcha', {
-            sitekey: '6Ld3IxcqAAAAABjTviT4TkRa2XhTkqp0y2heV-Cn',
-            callback: onRecaptchaVerified,
-        });
-    });
-});
 </script>
 
 <template>
@@ -69,7 +77,7 @@ onMounted(() => {
                             </div>
                         </div>
                         <br>
-                        <div id="recaptcha" class="g-recaptcha"></div>
+                        <!-- <div id="recaptcha" class="g-recaptcha"></div> -->
                         <br>
                         <button type="submit"
                             class="transition p-4 w-full bg-[#0FD2C0] hover:bg-[#0DB1AB] text-white rounded-lg">

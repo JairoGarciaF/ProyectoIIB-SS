@@ -12,6 +12,8 @@ import { getFirestore } from "firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
+
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
@@ -30,6 +32,12 @@ const db = getFirestore(app);
 
 const auth = getAuth(); // Obtiene la instancia de autenticación
 
+// Inicializar Firebase App Check
+const appCheck = initializeAppCheck(app, {
+  provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
+  isTokenAutoRefreshEnabled: true
+});
+console.log('Firebase App Check initialized:', appCheck);
 
 onAuthStateChanged(auth, (user) => {
   const isAuthenticated = !!user; // Verifica si el usuario está autenticado
@@ -43,10 +51,10 @@ onAuthStateChanged(auth, (user) => {
 });
 
 createApp(App)
-    .use(createPinia())
-    .use(PrimeVue)
-    .use(router)
-    .mount("#app");
+  .use(createPinia())
+  .use(PrimeVue)
+  .use(router)
+  .mount("#app");
 
 export { db };
 

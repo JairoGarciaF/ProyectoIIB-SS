@@ -10,10 +10,11 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@firebase/app-check": "^0.8.6",
     "@headlessui/vue": "^1.7.16",
     "daisyui": "^3.9.4",
     "dotenv": "^16.3.1",
-    "firebase": "^10.5.0",
+    "firebase": "^10.12.4",
     "loglevel": "^1.9.1",
     "moment-timezone": "^0.5.45",
     "pinia": "^2.1.6",
