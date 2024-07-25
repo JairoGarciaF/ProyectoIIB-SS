@@ -61,7 +61,7 @@ export const useCrudStore = defineStore('crud', () => {
                 correo: correo,
                 rol: "estudiante",
                 monedas: 0,
-                curso: "202311_01"
+                curso: "Ninguno"
             });
 
             log.info('user', `User ${correo} added successfully`);
