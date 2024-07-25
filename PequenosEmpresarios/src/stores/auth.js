@@ -59,6 +59,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     const login = async (email, password) => {
         const auth = getAuth();
+        const crudStore = useCrudStore();
         const clientIp = await getClientIp();
 
         return signInWithEmailAndPassword(auth, email, password)
@@ -70,10 +71,18 @@ export const useAuthStore = defineStore('auth', () => {
                         icon: "success",
                         confirmButtonColor: '#3085d6'
                     });
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         currentUserEmail.value = userCredential.user.email;
-                        localStorage.setItem("emailStatus", user.value.emailVerified);
-                        window.location.href = "/";
+                        localStorage.setItem("emailStatus", user.value.emailVerified);    
+                        //Se comprueba el rol de los usuarios para redirigirlos a su vista correspondiente           
+                        const user_1 = await crudStore.getUserByEmail(email);
+                        if (user_1.rol === "admin") {
+                            window.location.href = "/ProyectoIIB-SS/admin";
+                        }else if(user_1.rol === "profe") {
+                            window.location.href = "/";
+                        }else{
+                            window.location.href = "/";
+                        }
                     }, 3000);
                 } else {
                     log.warn('auth', `User tried to log in without email verification: ${email}`);
