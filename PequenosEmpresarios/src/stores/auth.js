@@ -8,8 +8,56 @@ import log from '@/utils/logger';
 import { getClientIp } from '@/utils/ip';
 import { db } from '@/main';
 
-const MAX_LOGIN_ATTEMPTS = 5;
-const LOCK_TIME = 30 * 60 * 1000;
+const SERVER_URL = 'http://localhost:5000';
+const incrementFailedLogin = async (email) => {
+    try {
+        const response = await fetch(`${SERVER_URL}/increment-failed-login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email })
+        });
+        const data = await response.json();
+        console.log(data.message);
+    } catch (error) {
+        console.error('Error incrementando intentos fallidos:', error);
+    }
+};
+
+const resetFailedLogin = async (email) => {
+    try {
+        const response = await fetch(`${SERVER_URL}/reset-failed-login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email })
+        });
+        const data = await response.json();
+        console.log(data.message);
+    } catch (error) {
+        console.error('Error reseteando intentos fallidos:', error);
+    }
+};
+
+const checkAccountLock = async (email) => {
+    try {
+        const userDocRef = doc(db, 'usuarios', email);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+            if (data.lockedUntil && data.lockedUntil.toMillis() > Date.now()) {
+                return true;
+            }
+        }
+        return false;
+    } catch (error) {
+        console.error('Error checking account lock:', error);
+        return false;
+    }
+};
 
 export const useAuthStore = defineStore('auth', () => {
 
@@ -22,74 +70,6 @@ export const useAuthStore = defineStore('auth', () => {
         repassword: '',
         errorMessage: ''
     });
-    const checkAccountLock = async (email) => {
-        try {
-            const userDocRef = doc(db, 'usuarios', email);
-            const userDoc = await getDoc(userDocRef);
-
-            if (userDoc.exists()) {
-                const data = userDoc.data();
-                if (data.lockedUntil && data.lockedUntil.toMillis() > Date.now()) {
-                    return true;
-                }
-            }
-            return false;
-        } catch (error) {
-            console.error('Error checking account lock:', error);
-            return false;
-        }
-    };
-
-    const incrementFailedLogin = async (email) => {
-        try {
-            const userDocRef = doc(db, 'usuarios', email);
-            const userDoc = await getDoc(userDocRef);
-
-            if (userDoc.exists()) {
-                const data = userDoc.data();
-                let attempts = (data.failedAttempts || 0) + 1;
-                let lockedUntil = null;
-
-                if (attempts >= MAX_LOGIN_ATTEMPTS) {
-                    attempts = 0;
-                    lockedUntil = new Date(Date.now() + LOCK_TIME);
-                    // Enviar notificación al usuario
-                    Swal.fire({
-                        title: 'Cuenta Bloqueada',
-                        text: 'Demasiados intentos fallidos. Su cuenta ha sido bloqueada temporalmente.',
-                        icon: 'error',
-                        confirmButtonColor: '#3085d6'
-                    });
-                }
-
-                await updateDoc(userDocRef, {
-                    failedAttempts: attempts,
-                    lockedUntil: lockedUntil
-                });
-            } else {
-                // No crear un nuevo documento si el usuario no existe
-                log.warn('auth', `Intento de inicio de sesión fallido para un usuario no registrado: ${email}`);
-            }
-        } catch (error) {
-            console.error('Error incrementing failed login:', error);
-        }
-    };
-
-    const resetFailedLogin = async (email) => {
-        try {
-            const userDocRef = doc(db, 'usuarios', email);
-            const userDoc = await getDoc(userDocRef);
-
-            if (userDoc.exists()) {
-                await updateDoc(userDocRef, {
-                    failedAttempts: 0,
-                    lockedUntil: null
-                });
-            }
-        } catch (error) {
-            console.error('Error resetting failed login:', error);
-        }
-    };
 
     const register = async (name, birthYear, email, password, flag) => {
         const auth = getAuth();
@@ -155,14 +135,14 @@ export const useAuthStore = defineStore('auth', () => {
                 });
                 setTimeout(async () => {
                     currentUserEmail.value = userCredential.user.email;
-                    localStorage.setItem("emailStatus", user.value.emailVerified);    
+                    localStorage.setItem("emailStatus", user.value.emailVerified);
                     //Se comprueba el rol de los usuarios para redirigirlos a su vista correspondiente           
                     const user_1 = await crudStore.getUserByEmail(email);
                     if (user_1.rol === "admin") {
                         window.location.href = "/ProyectoIIB-SS/admin";
-                    }else if(user_1.rol === "profe") {
+                    } else if (user_1.rol === "profe") {
                         window.location.href = "/";
-                    }else{
+                    } else {
                         window.location.href = "/";
                     }
                 }, 3000);
