@@ -37,7 +37,7 @@ const appCheck = initializeAppCheck(app, {
   provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
   isTokenAutoRefreshEnabled: true
 });
-console.log('Firebase App Check initialized:', appCheck);
+//console.log('Firebase App Check initialized:', appCheck);
 
 onAuthStateChanged(auth, (user) => {
   const isAuthenticated = !!user; // Verifica si el usuario está autenticado

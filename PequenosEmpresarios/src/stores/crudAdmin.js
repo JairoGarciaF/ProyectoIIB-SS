@@ -5,6 +5,18 @@ import { setDoc, collection, getDocs, getDoc, addDoc, deleteDoc, doc, updateDoc 
 import { useAuthStore } from '@/stores/auth.js';
 import { useRouter } from "vue-router";
 import log from '@/utils/logger';
+import CryptoJS from 'crypto-js';
+
+const SECRET_KEY = import.meta.env.VITE_ENCRYPTION_KEY;
+
+const encryptData = (data) => {
+    return CryptoJS.AES.encrypt(data, SECRET_KEY).toString();
+};
+
+const decryptData = (encryptedData) => {
+    const bytes = CryptoJS.AES.decrypt(encryptedData, SECRET_KEY);
+    return bytes.toString(CryptoJS.enc.Utf8);
+};
 
 export const useCrudAdminStore = defineStore('crudAdmin', () => {
 
@@ -18,8 +30,21 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
         const users = []
         const usersSnapshot = await getDocs(collection(db, "usuarios"));
         usersSnapshot.forEach(doc => {
-            const data = doc.data();
-            users.push(data)
+            const encryptedUserData = doc.data();
+            try {
+                const decryptedUser = {
+                    anionac: decryptData(encryptedUserData.anionac),
+                    correo: encryptedUserData.correo,
+                    curso: encryptedUserData.curso,
+                    monedas: encryptedUserData.monedas,
+                    nombre: decryptData(encryptedUserData.nombre),
+                    rol: encryptedUserData.rol
+                };
+                users.push(decryptedUser)
+            } catch (error) {
+                users.push(encryptedUserData)
+            }
+            
         })
         return users;
     };

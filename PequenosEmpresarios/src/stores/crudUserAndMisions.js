@@ -6,6 +6,18 @@ import { useAuthStore } from '@/stores/auth.js';
 import { useRouter } from "vue-router";
 import { ref } from "vue";
 import log from '@/utils/logger';
+import CryptoJS from 'crypto-js';
+
+const SECRET_KEY = import.meta.env.VITE_ENCRYPTION_KEY;
+
+const encryptData = (data) => {
+    return CryptoJS.AES.encrypt(data, SECRET_KEY).toString();
+};
+
+const decryptData = (encryptedData) => {
+    const bytes = CryptoJS.AES.decrypt(encryptedData, SECRET_KEY);
+    return bytes.toString(CryptoJS.enc.Utf8);
+};
 
 export const useCrudStore = defineStore('crud', () => {
 
@@ -17,7 +29,22 @@ export const useCrudStore = defineStore('crud', () => {
     // 1. Obtener la información del usuario con el email
     const getUserByEmail = async (email) => {
         const userSnapshot = await getDoc(doc(db, "usuarios", email));
-        return userSnapshot.data();
+
+        if (userSnapshot.exists()) {
+            const encryptedUserData = userSnapshot.data();
+            const decryptedUser = {
+                anionac: decryptData(encryptedUserData.anionac),
+                correo: encryptedUserData.correo,
+                curso: encryptedUserData.curso,
+                monedas: encryptedUserData.monedas,
+                nombre: decryptData(encryptedUserData.nombre),
+                rol: encryptedUserData.rol
+            };
+            return decryptedUser;
+        } else {
+            console.log("No such document!");
+            return null;
+        }
     };
 
 
@@ -29,12 +56,12 @@ export const useCrudStore = defineStore('crud', () => {
 
             // Establece los datos del documento
             await setDoc(docRef, {
-                nombre: nombre,
-                anionac: anio,
+                nombre: encryptData(nombre),
+                anionac: encryptData(anio.toString()),
                 correo: correo,
                 rol: "estudiante",
                 monedas: 0,
-                curso: "Ninguno"
+                curso: "202311_01"
             });
 
             log.info('user', `User ${correo} added successfully`);
@@ -44,6 +71,7 @@ export const useCrudStore = defineStore('crud', () => {
 
         } catch (error) {
             log.error('user', `Error adding user ${correo}: ${error}`)
+            console.log("Error adding document: ", error);
         }
     };
 
