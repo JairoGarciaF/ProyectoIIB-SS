@@ -24,7 +24,7 @@ app.post('/verify-recaptcha', async (req, res) => {
     });
 
     const data = await response.json();
-    console.log('reCAPTCHA verification response:', data);
+    // console.log('reCAPTCHA verification response:', data);
     res.json(data);
 });
 
