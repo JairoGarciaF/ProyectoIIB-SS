@@ -7,8 +7,9 @@ import { useCrudStore } from '@/stores/crudUserAndMisions.js';
 import log from '@/utils/logger';
 import { getClientIp } from '@/utils/ip';
 import { db } from '@/main';
+import config from '@/config';
 
-const SERVER_URL = 'http://localhost:5000';
+const SERVER_URL = config.SERVER_URL;
 const incrementFailedLogin = async (email) => {
     try {
         const response = await fetch(`${SERVER_URL}/increment-failed-login`, {

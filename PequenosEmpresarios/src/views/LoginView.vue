@@ -1,6 +1,7 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth.js';
 import { ref, onMounted, watch } from 'vue';
+import config from '@/config';
 const email = ref(null);
 const password = ref(null);
 const showCaptcha = ref(false);
@@ -26,7 +27,7 @@ const handleSubmit = async () => {
     let captchaValid = true;
 
     if (showCaptcha.value) {
-        const response = await fetch('http://localhost:5000/verify-recaptcha', {
+        const response = await fetch(`${config.SERVER_URL}/verify-recaptcha`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
