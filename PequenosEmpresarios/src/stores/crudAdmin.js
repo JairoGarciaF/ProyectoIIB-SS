@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth.js';
 import { useRouter } from "vue-router";
 import log from '@/utils/logger';
 import CryptoJS from 'crypto-js';
+import { roles } from '@/utils/roles';
 
 const SECRET_KEY = import.meta.env.VITE_ENCRYPTION_KEY;
 
@@ -101,6 +102,36 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
             log.info('course', `No course selected for ${email}`);
         }
 
+    }
+
+    //2.5 Cambiar rol
+
+    const changeUserRol = async (email, rol) => {
+        try {
+            // Utiliza el correo electrónico como ID
+            const docRef = doc(db, "usuarios", email);
+
+            // Establece los datos del documento
+            if (rol === "Estudiante") {
+                await updateDoc(docRef, {
+                    rol: roles[1],
+                });
+            }else if(rol === "Profesor"){
+                await updateDoc(docRef, {
+                    rol: roles[2],
+                });
+            }else if(rol === "Administrador"){
+                await updateDoc(docRef, {
+                    rol: roles[0],
+                });
+            }
+            
+            log.info('course', `User ${email} rol changed to ${rol} successfully`);
+
+
+        } catch (error) {
+            log.error('course', `Error changing user ${email} rol: ${error}`);
+        }
     }
 
 
@@ -363,6 +394,7 @@ export const useCrudAdminStore = defineStore('crudAdmin', () => {
     return {
         getAllUsers,
         addUserToCourse,
+        changeUserRol,
         addUser,
         deleteUser,
         getUserMissionSelected,

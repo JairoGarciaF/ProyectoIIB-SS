@@ -28,6 +28,7 @@ onMounted(async () => {
         <th class=" py-2 px-4 border-b">Nombre</th>
         <th class="py-2 px-4 border-b">Edad</th>
         <th class="py-2 px-4 border-b">Curso</th>
+        <th class="py-2 px-4 border-b">Rol</th>
       </tr>
     </thead>
     <tbody>
@@ -40,7 +41,14 @@ onMounted(async () => {
             <option>Ninguno</option>
             <option>202311_01</option>
           </select>
-
+        </td>
+        <td class="py-2 px-4 border-b">
+          <select @change="adminStore.changeUserRol(user.correo, $event.target.value)" class="border-[#0DB1AB] select select-primary w-full max-w-xs">
+            <option disabled selected>Actual: {{ user.rol }}</option>
+            <option>Estudiante</option>
+            <option>Profesor</option>
+            <option>Administrador</option>
+          </select>
         </td>
       </tr>
     </tbody>
