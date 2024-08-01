@@ -12,7 +12,7 @@ import { getFirestore } from "firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
+import { initializeAppCheck, ReCaptchaV3Provider, getToken } from "firebase/app-check";
 
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -56,5 +56,5 @@ createApp(App)
   .use(router)
   .mount("#app");
 
-export { db };
+export { db, appCheck };
 

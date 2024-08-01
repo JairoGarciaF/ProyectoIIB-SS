@@ -6,16 +6,27 @@ import { ref, watchEffect } from 'vue';
 import { useCrudStore } from '@/stores/crudUserAndMisions.js';
 import log from '@/utils/logger';
 import { getClientIp } from '@/utils/ip';
-import { db } from '@/main';
+import { db, appCheck } from '@/main';
 import config from '@/config';
-
+//Nuevo
+import { getToken } from 'firebase/app-check';
 const SERVER_URL = config.SERVER_URL;
+
+
+//Nuevo
+// const getAppCheckToken = async () => {
+//     const appCheckTokenResponse = await getToken(appCheck);
+//     return appCheckTokenResponse.token;
+// };
 const incrementFailedLogin = async (email) => {
     try {
+        //Nuevo
+        // const appCheckToken = await getAppCheckToken();
         const response = await fetch(`${SERVER_URL}/increment-failed-login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
+                // ,'X-Firebase-AppCheck': appCheckToken
             },
             body: JSON.stringify({ email })
         });
@@ -28,10 +39,13 @@ const incrementFailedLogin = async (email) => {
 
 const resetFailedLogin = async (email) => {
     try {
+        //Nuevo
+        // const appCheckToken = await getAppCheckToken();
         const response = await fetch(`${SERVER_URL}/reset-failed-login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
+                // ,'X-Firebase-AppCheck': appCheckToken
             },
             body: JSON.stringify({ email })
         });

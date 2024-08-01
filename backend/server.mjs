@@ -19,6 +19,22 @@ app.use(cors({
     origin: '*'
 }));
 
+// Nuevo: Middleware para verificar tokens de App Check
+// app.use(async (req, res, next) => {
+//     const appCheckToken = req.header('X-Firebase-AppCheck');
+//     if (!appCheckToken) {
+//         return res.status(401).json({ message: 'No App Check token provided' });
+//     }
+
+//     try {
+//         await admin.appCheck().verifyToken(appCheckToken);
+//         next();
+//     } catch (error) {
+//         console.error('Error verifying App Check token:', error);
+//         return res.status(401).json({ message: 'Invalid App Check token' });
+//     }
+// });
+
 // Endpoint para verificar reCAPTCHA
 app.post('/verify-recaptcha', async (req, res) => {
     const { token } = req.body;
